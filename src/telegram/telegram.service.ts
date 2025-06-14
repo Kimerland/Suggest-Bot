@@ -1,8 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { handleAdminMessage } from 'src/lib/admin.handler';
+import { handleUserMessage } from 'src/lib/user.handler';
 import { Telegraf } from 'telegraf';
-
-// dotenv.config()
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -21,8 +21,19 @@ export class TelegramService implements OnModuleInit {
       );
     });
 
-    this.bot.on('text', (ctx) => {
-      ctx.reply('You write');
+    const adminId = this.configService.get<string>('ADMIN_CHAT_ID');
+    if (!adminId) return;
+
+    this.bot.on('message', (ctx) => {
+      if (ctx.from.id.toString() === adminId) {
+        handleAdminMessage(ctx);
+      } else {
+        handleUserMessage(ctx, adminId);
+      }
+    });
+
+    this.bot.on('callback_query', (ctx) => {
+      handleAdminMessage(ctx);
     });
 
     this.bot.launch();
