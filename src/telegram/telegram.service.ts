@@ -1,6 +1,9 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { handleAdminMessage } from 'src/lib/admin.handler';
+import { banlistCommand } from 'src/lib/commands/banlist.command';
+import { clearCommand } from 'src/lib/commands/clear.command';
+import { helpCommand } from 'src/lib/commands/help.command';
 import { handleUserMessage } from 'src/lib/user.handler';
 import { Markup, Telegraf } from 'telegraf';
 
@@ -36,20 +39,11 @@ export class TelegramService implements OnModuleInit {
       }
     });
 
-    this.bot.hears('🧹 Очистить предложку (/rm)', async (ctx) => {
-      await ctx.reply('Очищаю');
-      // fn
-    });
+    this.bot.hears('🧹 Очистить предложку (/rm)', clearCommand);
 
-    this.bot.hears('ℹ️ Помощь (/help)', async (ctx) => {
-      await ctx.reply('Help');
-      // fn
-    });
+    this.bot.hears('ℹ️ Помощь (/help)', helpCommand);
 
-    this.bot.hears('🚫 Banlist (/banlist)', async (ctx) => {
-      await ctx.reply('Ban');
-      // fn
-    });
+    this.bot.hears('🚫 Banlist (/banlist)', banlistCommand);
 
     this.bot.on('message', (ctx) => {
       if (ctx.from.id.toString() === adminId) {

@@ -53,5 +53,5 @@ export const handleUserMessage = async (ctx: Context, adminId: string) => {
     });
   }
 
-  await ctx.reply('Сooбщение отправлено');
+  await ctx.reply('Спасибо за ваше сообщение!');
 };
