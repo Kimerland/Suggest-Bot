@@ -1,3 +1,4 @@
+import { prisma } from 'prisma/prisma.service';
 import { Context } from 'telegraf';
 
 export const handleUserMessage = async (ctx: Context, adminId: string) => {
@@ -9,8 +10,22 @@ export const handleUserMessage = async (ctx: Context, adminId: string) => {
     return;
   }
 
+  if (!ctx.from || !ctx.chat) {
+    await ctx.reply('Не удалось получить информацию о пользователе или чате.');
+    return;
+  }
+
+  const text = 'text' in message ? message.text : '';
+  const userId = ctx.from?.id.toString();
+  const chatId = ctx.chat.id.toString();
+  const messageId = message.message_id;
+
   const from = ctx.from;
   if (!from) return;
+
+  await prisma.suggestion.create({
+    data: { userId, chatId, messageId, text },
+  });
 
   const userInfo = `👤 Сообщение от пользователя:
   Username: @${from.username || 'нет'}

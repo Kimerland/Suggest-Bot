@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Suggestion {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  messageId  Int
+  chatId     String
+  text       String
+  createdAt  DateTime @default(now())
+}
+
+model Ban {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  reason    String
+  createdAt DateTime @default(now())
+}
