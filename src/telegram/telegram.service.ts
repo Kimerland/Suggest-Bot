@@ -45,7 +45,7 @@ export class TelegramService implements OnModuleInit {
 
     this.bot.hears('🚫 Banlist (/banlist)', banlistCommand);
 
-    this.bot.on('message', (ctx) => {
+    this.bot.on('message', async (ctx) => {
       if (ctx.from.id.toString() === adminId) {
         handleAdminMessage(ctx);
       } else {
@@ -53,7 +53,7 @@ export class TelegramService implements OnModuleInit {
       }
     });
 
-    this.bot.on('callback_query', (ctx) => {
+    this.bot.on('callback_query', async (ctx) => {
       handleAdminMessage(ctx);
     });
 

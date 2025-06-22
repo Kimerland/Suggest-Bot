@@ -27,17 +27,24 @@ export const handleUserMessage = async (ctx: Context, adminId: string) => {
     data: { userId, chatId, messageId, text },
   });
 
-  const userInfo = `👤 Сообщение от пользователя:
-  Username: @${from.username || 'нет'}
-  ID: ${from.id}
-  Имя: ${from.first_name} ${from.last_name || ''}`;
+  const userInfo = `👤 ${from.first_name} ${from.last_name || ''}`;
 
   const sent = await ctx.telegram.sendMessage(
     adminId,
-    `${userInfo}\n ${text}`,
+    `${text}
+    \n ${userInfo}`,
     {
       reply_markup: {
         inline_keyboard: [
+          [
+            { text: '🚫', callback_data: `ban:${from.id}` },
+            { text: '🧹', callback_data: `clear:${from.id}` },
+            { text: '🗑', callback_data: `delete:${from.id}` },
+          ],
+          [
+            { text: '📝', callback_data: `note:${from.id}` },
+            { text: '👤', callback_data: `info:${from.id}` },
+          ],
           [{ text: 'Ответить', callback_data: `reply:${from.id}` }],
         ],
       },

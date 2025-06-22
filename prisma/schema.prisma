@@ -24,6 +24,13 @@ model Suggestion {
   createdAt  DateTime @default(now())
 }
 
+model ReplySession {
+  id        Int      @id @default(autoincrement())
+  adminId   String   @unique
+  userId    String
+  createdAt DateTime @default(now())
+}
+
 model Ban {
   id        Int      @id @default(autoincrement())
   userId    Int
