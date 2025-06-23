@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { prisma } from 'prisma/prisma.service';
 import { handleAdminMessage } from 'src/lib/admin.handler';
 import { banlistCommand } from 'src/lib/commands/banlist.command';
 import { clearCommand } from 'src/lib/commands/clear.command';
@@ -46,6 +47,15 @@ export class TelegramService implements OnModuleInit {
     this.bot.hears('🚫 Banlist (/banlist)', banlistCommand);
 
     this.bot.on('message', async (ctx) => {
+      const userId = String(ctx.from.id);
+
+      const isBanned = await prisma.bannedUser.findUnique({
+        where: { userId },
+      });
+      if (isBanned) {
+        await ctx.reply('Вы заблокированы и не можете отправлять сообщения.');
+        return;
+      }
       if (ctx.from.id.toString() === adminId) {
         handleAdminMessage(ctx);
       } else {

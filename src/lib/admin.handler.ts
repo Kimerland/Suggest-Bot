@@ -40,5 +40,84 @@ export const handleAdminMessage = async (ctx: Context) => {
 
       await ctx.reply('Напишите ответ пользователю:');
     }
+
+    if (callback.data.startsWith('ban:')) {
+      const userId = callback.data.split(':')[1];
+      const isBanned = await prisma.bannedUser.findUnique({
+        where: { userId },
+      });
+
+      if (isBanned) {
+        await ctx.reply('Пользователь уже заблокирован.');
+        return;
+      }
+
+      await prisma.bannedUser.create({ data: { userId, reason: 'Fake all' } });
+      const suggestions = await prisma.suggestion.findMany({
+        where: { userId },
+      });
+
+      for (const suggestion of suggestions) {
+        try {
+          await ctx.telegram.deleteMessage(
+            suggestion.chatId,
+            suggestion.messageId,
+          );
+        } catch (e) {
+          console.error(`Не удалось удалить  ${suggestion.messageId}:`, e);
+        }
+      }
+
+      await prisma.suggestion.deleteMany({ where: { userId } });
+      await ctx.reply('Пользователь заблокирован и его сообщения удалены.');
+    }
+
+    if (callback.data.startsWith('clear:')) {
+      const userId = callback.data.split(':')[1];
+      const suggestions = await prisma.suggestion.findMany({
+        where: { userId },
+      });
+
+      for (const suggestion of suggestions) {
+        try {
+          await ctx.telegram.deleteMessage(
+            suggestion.chatId,
+            suggestion.messageId,
+          );
+        } catch (e) {
+          console.error(`Не удалось удалить ${suggestion.messageId}:`, e);
+        }
+      }
+
+      await prisma.suggestion.deleteMany({ where: { userId } });
+      await ctx.reply('Предложения пользователя очищены.');
+    }
+
+    if (callback.data.startsWith('delete:')) {
+      const userId = ctx.callbackQuery.message?.message_id;
+      const chatId = ctx.callbackQuery.message?.chat.id;
+      if (userId && chatId) {
+        await ctx.telegram.deleteMessage(chatId, userId);
+      }
+    }
+
+    if (callback.data.startsWith('info:')) {
+      const userId = callback.data.split(':')[1];
+      await ctx.reply(`Получение информации о пользователе :\nID: ${userId}`);
+    }
+
+    if (callback.data.startsWith('unban:')) {
+      const userId = callback.data.split(':')[1];
+      await prisma.bannedUser.delete({ where: { userId } });
+      await ctx.reply(`Пользователь ${userId} был разблокирован.`);
+    }
+
+    if (callback.data === 'close') {
+      const messageId = ctx.callbackQuery.message?.message_id;
+      const chatId = ctx.callbackQuery.message?.chat.id;
+      if (messageId && chatId) {
+        await ctx.telegram.deleteMessage(chatId, messageId);
+      }
+    }
   }
 };

@@ -31,9 +31,8 @@ model ReplySession {
   createdAt DateTime @default(now())
 }
 
-model Ban {
-  id        Int      @id @default(autoincrement())
-  userId    Int
+model BannedUser {
+  userId    String   @id
   reason    String
   createdAt DateTime @default(now())
 }

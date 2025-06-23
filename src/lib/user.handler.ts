@@ -50,6 +50,11 @@ export const handleUserMessage = async (ctx: Context, adminId: string) => {
       },
     },
   );
+  const isBanned = await prisma.bannedUser.findUnique({ where: { userId } });
+  if (isBanned) {
+    await ctx.reply('Вы заблокированы и не можете отправлять сообщения.');
+    return;
+  }
 
   await prisma.suggestion.create({
     data: {
