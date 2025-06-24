@@ -1,4 +1,4 @@
-import { Context } from 'telegraf';
+import { Context, Markup } from 'telegraf';
 import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
 import { prisma } from 'prisma/prisma.service';
 
@@ -52,7 +52,13 @@ export const handleAdminMessage = async (ctx: Context) => {
         return;
       }
 
-      await prisma.bannedUser.create({ data: { userId, reason: 'Fake all' } });
+      await prisma.bannedUser.create({
+        data: {
+          userId,
+          reason: 'Fake all',
+          username: userId || '',
+        },
+      });
       const suggestions = await prisma.suggestion.findMany({
         where: { userId },
       });
@@ -102,8 +108,11 @@ export const handleAdminMessage = async (ctx: Context) => {
     }
 
     if (callback.data.startsWith('info:')) {
+      const from = ctx.from;
+      if (!from) return;
+
       const userId = callback.data.split(':')[1];
-      await ctx.reply(`Получение информации о пользователе :\nID: ${userId}`);
+      await ctx.reply(`Номерок Id: ${userId}`);
     }
 
     if (callback.data.startsWith('unban:')) {

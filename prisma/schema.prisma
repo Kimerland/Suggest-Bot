@@ -32,6 +32,7 @@ model ReplySession {
 }
 
 model BannedUser {
+  username String
   userId    String   @id
   reason    String
   createdAt DateTime @default(now())

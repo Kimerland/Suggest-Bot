@@ -13,7 +13,10 @@ export async function banlistCommand(ctx: Context) {
   }
 
   const buttons = banned.map((user) => [
-    Markup.button.callback(`${user.userId}`, `unban:${user.userId}`),
+    Markup.button.callback(
+      `${user.username || user.userId}`,
+      `unban:${user.userId}`,
+    ),
   ]);
 
   buttons.push([Markup.button.callback('« Закрыть »', 'close')]);

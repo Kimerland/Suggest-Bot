@@ -41,12 +41,15 @@ export class TelegramService implements OnModuleInit {
     });
 
     this.bot.hears('🧹 Очистить предложку (/rm)', clearCommand);
+    this.bot.command('rm', clearCommand);
 
     this.bot.hears('ℹ️ Помощь (/help)', helpCommand);
-
+    this.bot.command('help', helpCommand);
+    
     this.bot.hears('🚫 Banlist (/banlist)', banlistCommand);
+    this.bot.command('banlist', banlistCommand);
 
-    this.bot.on('message', async (ctx) => {
+    this.bot.on('text', async (ctx) => {
       const userId = String(ctx.from.id);
 
       const isBanned = await prisma.bannedUser.findUnique({
@@ -56,7 +59,28 @@ export class TelegramService implements OnModuleInit {
         await ctx.reply('Вы заблокированы и не можете отправлять сообщения.');
         return;
       }
+
       if (ctx.from.id.toString() === adminId) {
+        if ('reply_to_message' in ctx.message && ctx.message.reply_to_message) {
+          const repliedMessage = ctx.message.reply_to_message;
+          const originalMessageId = repliedMessage.message_id;
+          const chatId = repliedMessage.chat.id;
+
+          const suggestion = await prisma.suggestion.findFirst({
+            where: {
+              messageId: originalMessageId,
+              chatId: chatId.toString(),
+            },
+          });
+
+          if (suggestion) {
+            await ctx.telegram.sendMessage(suggestion.userId, ctx.message.text);
+            await ctx.reply('✅ Ответ отправлен.');
+          } else {
+            await ctx.reply('❌ Не удалось найти сообщение для ответа.');
+          }
+          return;
+        }
         handleAdminMessage(ctx);
       } else {
         handleUserMessage(ctx, adminId);
