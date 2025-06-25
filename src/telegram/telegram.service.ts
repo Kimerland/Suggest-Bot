@@ -45,7 +45,7 @@ export class TelegramService implements OnModuleInit {
 
     this.bot.hears('ℹ️ Помощь (/help)', helpCommand);
     this.bot.command('help', helpCommand);
-    
+
     this.bot.hears('🚫 Banlist (/banlist)', banlistCommand);
     this.bot.command('banlist', banlistCommand);
 

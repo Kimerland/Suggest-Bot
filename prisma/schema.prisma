@@ -6,21 +6,15 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 model Suggestion {
   id        Int      @id @default(autoincrement())
   userId    String
   messageId  Int
   chatId     String
   text       String
+  username String?
+  firstName String?
+  lastName  String?
   createdAt  DateTime @default(now())
 }
 

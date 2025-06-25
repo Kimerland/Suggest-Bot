@@ -1,4 +1,4 @@
-import { Context, Markup } from 'telegraf';
+import { Context } from 'telegraf';
 import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
 import { prisma } from 'prisma/prisma.service';
 
@@ -52,13 +52,21 @@ export const handleAdminMessage = async (ctx: Context) => {
         return;
       }
 
+      const last = await prisma.suggestion.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
+
       await prisma.bannedUser.create({
         data: {
           userId,
           reason: 'Fake all',
-          username: userId || '',
+          username: last?.username
+            ? `@${last.username}`
+            : last?.firstName || userId,
         },
       });
+
       const suggestions = await prisma.suggestion.findMany({
         where: { userId },
       });
@@ -108,11 +116,22 @@ export const handleAdminMessage = async (ctx: Context) => {
     }
 
     if (callback.data.startsWith('info:')) {
-      const from = ctx.from;
-      if (!from) return;
-
       const userId = callback.data.split(':')[1];
-      await ctx.reply(`Номерок Id: ${userId}`);
+      const last = await prisma.suggestion.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (!last) {
+        await ctx.reply('Пользователь не найден или у него нет предложений.');
+        return;
+      }
+
+      const info = `👤 Имя: ${last.firstName || '-'} ${last.lastName || ''}
+      \n🔗 Username: @${last.username || 'не указан'}
+      \n🆔 ${last.userId}`;
+
+      await ctx.reply(info);
     }
 
     if (callback.data.startsWith('unban:')) {

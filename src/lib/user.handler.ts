@@ -15,18 +15,9 @@ export const handleUserMessage = async (ctx: Context, adminId: string) => {
     return;
   }
 
+  const from = ctx.from;
   const text = 'text' in message ? message.text : '';
   const userId = ctx.from?.id.toString();
-  const chatId = ctx.chat.id.toString();
-  const messageId = message.message_id;
-
-  const from = ctx.from;
-  if (!from) return;
-
-  await prisma.suggestion.create({
-    data: { userId, chatId, messageId, text },
-  });
-
   const userInfo = `👤 ${from.first_name} ${from.last_name || ''}`;
 
   const sent = await ctx.telegram.sendMessage(
@@ -42,14 +33,14 @@ export const handleUserMessage = async (ctx: Context, adminId: string) => {
             { text: '🗑', callback_data: `delete:${from.id}` },
           ],
           [
-            { text: '📝', callback_data: `note:${from.id}` },
             { text: '👤', callback_data: `info:${from.id}` },
+            { text: 'Ответить', callback_data: `reply:${from.id}` },
           ],
-          [{ text: 'Ответить', callback_data: `reply:${from.id}` }],
         ],
       },
     },
   );
+
   const isBanned = await prisma.bannedUser.findUnique({ where: { userId } });
   if (isBanned) {
     await ctx.reply('Вы заблокированы и не можете отправлять сообщения.');
@@ -58,10 +49,13 @@ export const handleUserMessage = async (ctx: Context, adminId: string) => {
 
   await prisma.suggestion.create({
     data: {
-      userId,
-      chatId: adminId,
+      userId: ctx.from.id.toString(),
+      chatId: adminId.toString(),
       messageId: sent.message_id,
-      text: text || '',
+      text: text,
+      username: ctx.from.username,
+      firstName: ctx.from.first_name,
+      lastName: ctx.from.last_name,
     },
   });
 
